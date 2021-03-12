@@ -2,69 +2,50 @@
   <div id="text_label">
     <el-card>
       <el-row :gutter="20"
-        ><i class="el-icon-s-home"></i> <span>原文</span>
-      </el-row>
-      <el-row :gutter="20"
-        ><span>{{ text }} </span></el-row
-      >
-    </el-card>
-    <el-card>
-      <el-row :gutter="20"
-        ><el-col :span="8">实体标注</el-col
         ><el-col :span="8"
           ><el-button @click="updateText">开始标注</el-button></el-col
+        ><el-col :span="8"
+          ><el-button @click="updateText">下一个</el-button></el-col
         ></el-row
       >
       <el-row :gutter="20">
         <el-col :span="8">
           <div style="margin-top:20px">
-            <span style="font-weight:600;">预标注:{{ text_pre }}</span>
-            <el-input style="width:65%;margin-left:22px;"> </el-input></div
+            <span style="font-weight:600;">标注字段:</span>
+            <el-input
+              style="width:65%;margin-left:22px;"
+              v-model="text_pre"
+            ></el-input></div
         ></el-col>
         <el-col :span="8">
           <div style="margin-top:20px">
-            <span style="font-weight:600;">替换为:{{ text_pre }}</span>
-            <el-input style="width:65%;margin-left:22px;"> </el-input></div
+            <span style="font-weight:600;">标注为:</span>
+            <el-input style="width:65%;margin-left:22px;" v-model="text_label">
+            </el-input></div
         ></el-col>
       </el-row>
     </el-card>
     <el-card>
-      <el-row :gutter="20">
-        <!-- <el-col :span="4">{{ resp_values }}</el-col> -->
-        <div
-          style="
-          padding: 0 15px;
-          border-style: grrove;
-          overflow: hidden;
-          display: flex;
-          flex-wrap: wrap;
-        "
-        >
-          <div v-for="(entity, index) in entities" :key="(entity, index)">
-            <p
-              style="
-              margin: 0;
-              line-height: 30px;
-              font-weight: 580;
-              padding: 0 16px;
-            "
-            >
-              {{ entity }}
-            </p>
-            <p
-              style="
-              margin: 0;
-              line-height: 20px;
-              font-size: 12px;
-              padding: 0 16px;
-            "
-            >
-              {{ resp_values[index] }}
-            </p>
-          </div>
-        </div>
+      <el-row :gutter="20"
+        ><i class="el-icon-s-home"></i> <span>原文</span>
       </el-row>
+      <el-row :gutter="20" @mouseup="handleMouseSelect"
+        ><span>{{ text }} </span></el-row
+      >
     </el-card>
+    <el-radio-group
+      v-model="value"
+      placeholder="请选择"
+      v-show="flag == '' ? show : !show"
+    >
+      <el-radio-button
+        v-for="item in options"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+        @click.prevent="textLabel(item.value)"
+      ></el-radio-button>
+    </el-radio-group>
   </div>
 </template>
 
@@ -72,10 +53,22 @@
 export default {
   data() {
     return {
-      entities: [],
-      resp_values: [],
-      text: "null",
-      text_pre: null
+      show: false,
+      text: "",
+      text_pre: "",
+      text_label: "",
+      flag: "",
+      options: [
+        {
+          value: "LOC",
+          label: "LOC"
+        },
+        {
+          value: "RES",
+          label: "RES"
+        }
+      ],
+      value: ""
     };
   },
   methods: {
@@ -84,19 +77,17 @@ export default {
         .get(`/api/get_text`)
         .then(res => {
           this.text = res.data.data[0].text;
-          let resp = res.data.data[0].label_pre;
-          let temp = [];
-          let value_temp = [];
-          if (res.status == 200) {
-            for (let i in resp) {
-              temp.push(String(resp[i]["item"]));
-              this.entities = temp;
-              value_temp.push(String(resp[i]["pos"]));
-              this.resp_values = value_temp;
-            }
-          }
         })
         .catch(error => console.log(error));
+    },
+    handleMouseSelect() {
+      let text = window.getSelection().toString();
+      this.text_pre = this.flag = text;
+    },
+    textLabel(value) {
+      this.text_label = value;
+      this.text = this.text.replace(this.flag, this.flag + "/" + value + " ");
+      this.flag = "";
     }
   }
 };
