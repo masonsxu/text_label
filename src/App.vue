@@ -14,16 +14,15 @@
       <el-header style="font-weight:700;font-size:18px;">
         {{ mseeage.title }}
       </el-header>
-      <!-- <router-view></router-view> -->
-      <TextLabel msg="TextLabel" />
+      <!-- <router-link to="/Login">登录</router-link>
+      <router-link to="/TextLable">标注</router-link> -->
+      <router-view></router-view>
       <el-footer>{{ mseeage.footer }}</el-footer>
     </el-container>
   </div>
 </template>
 
 <script>
-import TextLabel from "./views/TextLabel";
-
 export default {
   name: "App",
   data() {
@@ -33,9 +32,6 @@ export default {
         footer: "地址：河南省平顶山市新城区龙翔大道  河南城建学院版权所有"
       }
     };
-  },
-  components: {
-    TextLabel
   }
 };
 </script>
