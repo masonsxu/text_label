@@ -5,7 +5,7 @@
         ><el-col :span="8"
           ><el-button @click="updateText">开始标注</el-button></el-col
         ><el-col :span="8"
-          ><el-button @click="updateText">下一个</el-button></el-col
+          ><el-button @click="saveAndNext">保存进入下一条</el-button></el-col
         ></el-row
       >
       <el-row :gutter="20">
@@ -29,8 +29,14 @@
       <el-row :gutter="20"
         ><i class="el-icon-s-home"></i> <span>原文</span>
       </el-row>
-      <el-row :gutter="20" @mouseup="handleMouseSelect"
-        ><span>{{ text }} </span></el-row
+      <el-row :gutter="20" @mouseup="handleMouseSelect">
+        <span>
+          <span v-for="item in abstract_label" :key="item.text"
+            ><el-tag>{{ item.text }}</el-tag>
+            <el-tag type="success">{{ item.label }}</el-tag></span
+          >
+          {{ text }}
+        </span></el-row
       >
     </el-card>
     <el-radio-group
@@ -54,10 +60,15 @@ export default {
   data() {
     return {
       show: false,
+      end: 0,
+      bagin: 0,
+      media_id: 1,
+      flag: "",
       text: "",
+      abstract: "",
       text_pre: "",
       text_label: "",
-      flag: "",
+      abstract_label: [],
       options: [
         {
           value: "LOC",
@@ -76,18 +87,46 @@ export default {
       this.$axios
         .get(`/api/get_text`)
         .then(res => {
-          this.text = res.data.data[0].text;
+          this.abstract = this.text = res.data.data[0].text;
         })
         .catch(error => console.log(error));
     },
     handleMouseSelect() {
-      let text = window.getSelection().toString();
-      this.text_pre = this.flag = text;
+      this.bagin = window.getSelection().anchorOffset;
+      this.end = window.getSelection().focusOffset;
+      this.text_pre = this.flag = window.getSelection().toString();
     },
     textLabel(value) {
-      this.text_label = value;
-      this.text = this.text.replace(this.flag, this.flag + "/" + value + " ");
-      this.flag = "";
+      if (this.bagin == 1) {
+        this.text_label = value;
+        this.text = this.text.substring((this.end -= 1));
+        this.abstract_label.push({ text: this.flag, label: value });
+        this.flag = "";
+      } else {
+        alert("请按照顺序进行标注");
+      }
+    },
+    saveAndNext() {
+      this.media_id += 1;
+      console.log(this.media_id);
+      this.$axios
+        .post(`/api/saveAndNext`, {
+          media_id: this.media_id,
+          abstract: this.abstract,
+          abstract_label: this.abstract_label
+        })
+        .then(res => {
+          this.end = 0;
+          this.bagin = 0;
+          this.text = "";
+          this.flag = "";
+          this.text_pre = "";
+          this.abstract = "";
+          this.text_label = "";
+          this.abstract_label = [];
+          this.abstract = this.text = res.data.data[0].text;
+        })
+        .catch(error => console.log(error));
     }
   }
 };
