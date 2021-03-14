@@ -87,7 +87,7 @@ export default {
       this.$axios
         .get(`/api/get_text`)
         .then(res => {
-          this.abstract = this.text = res.data.data[0].text;
+          this.abstract = this.text = res.data.abstract;
         })
         .catch(error => console.log(error));
     },
@@ -108,7 +108,6 @@ export default {
     },
     saveAndNext() {
       this.media_id += 1;
-      console.log(this.media_id);
       this.$axios
         .post(`/api/saveAndNext`, {
           media_id: this.media_id,
@@ -124,7 +123,7 @@ export default {
           this.abstract = "";
           this.text_label = "";
           this.abstract_label = [];
-          this.abstract = this.text = res.data.data[0].text;
+          this.abstract = this.text = res.data.abstract;
         })
         .catch(error => console.log(error));
     }
