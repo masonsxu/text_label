@@ -62,7 +62,6 @@ export default {
       show: false,
       end: 0,
       bagin: 0,
-      media_id: 1,
       flag: "",
       text: "",
       abstract: "",
@@ -107,25 +106,27 @@ export default {
       }
     },
     saveAndNext() {
-      this.media_id += 1;
-      this.$axios
-        .post(`/api/saveAndNext`, {
-          media_id: this.media_id,
-          abstract: this.abstract,
-          abstract_label: this.abstract_label
-        })
-        .then(res => {
-          this.end = 0;
-          this.bagin = 0;
-          this.text = "";
-          this.flag = "";
-          this.text_pre = "";
-          this.abstract = "";
-          this.text_label = "";
-          this.abstract_label = [];
-          this.abstract = this.text = res.data.abstract;
-        })
-        .catch(error => console.log(error));
+      if (this.text.length == 0) {
+        this.$axios
+          .post(`/api/saveAndNext`, {
+            abstract: this.abstract,
+            abstract_label: this.abstract_label
+          })
+          .then(res => {
+            this.end = 0;
+            this.bagin = 0;
+            this.text = "";
+            this.flag = "";
+            this.text_pre = "";
+            this.abstract = "";
+            this.text_label = "";
+            this.abstract_label = [];
+            this.abstract = this.text = res.data.abstract;
+          })
+          .catch(error => console.log(error));
+      } else {
+        alert("标注未完成，请完成标注后进行保存！！！");
+      }
     }
   }
 };
