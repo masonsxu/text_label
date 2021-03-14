@@ -26,18 +26,21 @@
       </el-row>
     </el-card>
     <el-card>
-      <el-row :gutter="20"
-        ><i class="el-icon-s-home"></i> <span>原文</span>
-      </el-row>
-      <el-row :gutter="20" @mouseup="handleMouseSelect">
-        <span>
+      <el-row :gutter="20"><i class="el-icon-s-home">原文</i> </el-row>
+      <el-row
+        :gutter="20"
+        @mouseup="handleMouseSelect"
+        type="flex"
+        justify="center"
+      >
+        <span style="width:95%">
           <span v-for="item in abstract_label" :key="item.text"
             ><el-tag>{{ item.text }}</el-tag>
             <el-tag type="success">{{ item.label }}</el-tag></span
           >
           {{ text }}
-        </span></el-row
-      >
+        </span>
+      </el-row>
     </el-card>
     <el-radio-group
       v-model="value"
@@ -62,6 +65,7 @@ export default {
       show: false,
       end: 0,
       bagin: 0,
+      text_height: 0,
       flag: "",
       text: "",
       abstract: "",
@@ -76,6 +80,22 @@ export default {
         {
           value: "RES",
           label: "RES"
+        },
+        {
+          value: "TIME",
+          label: "TIME"
+        },
+        {
+          value: "PER",
+          label: "PER"
+        },
+        {
+          value: "ORG",
+          label: "ORG"
+        },
+        {
+          value: "O",
+          label: "O"
         }
       ],
       value: ""
@@ -91,9 +111,24 @@ export default {
         .catch(error => console.log(error));
     },
     handleMouseSelect() {
+      let loc = window
+        .getSelection()
+        .getRangeAt(0)
+        .getBoundingClientRect();
       this.bagin = window.getSelection().anchorOffset;
       this.end = window.getSelection().focusOffset;
       this.text_pre = this.flag = window.getSelection().toString();
+      let el_radio_group = document.getElementsByClassName("el-radio-group")[0];
+      el_radio_group.style.position = "absolute";
+      el_radio_group.style.top = String(loc.bottom) + "px";
+      if (this.text_height == 0) {
+        el_radio_group.style.left = String(loc.left + loc.width) + "px";
+        this.text_height = loc.height;
+      } else if (this.text_height != 0 && loc.height == this.text_height) {
+        el_radio_group.style.left = String(loc.left + loc.width) + "px";
+      } else {
+        el_radio_group.style.left = String(loc.left + loc.left) + "px";
+      }
     },
     textLabel(value) {
       if (this.bagin == 1) {
