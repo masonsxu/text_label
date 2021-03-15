@@ -1,11 +1,20 @@
 <template>
   <div id="text_label">
     <el-card>
+      <el-row><i class="el-icon-s-opportunity">标注规则</i></el-row>
+      <el-row>
+        标注方式：BIO标注（其中B代表Begin，指代实体的开始，I代表Inner，指代实体内部，O代表Other，指代不属于实体的字）
+        <br />标点符号一律标注为O <br />实体种类：<br />时间—TIME <br />地点—LOC
+        <br />人物—PER<br />
+        机构/组织—ORG <br />结果—RES
+      </el-row>
+    </el-card>
+    <el-card>
       <el-row :gutter="20"
         ><el-col :span="8"
-          ><el-button @click="updateText">开始标注</el-button></el-col
-        ><el-col :span="8"
-          ><el-button @click="saveAndNext">保存进入下一条</el-button></el-col
+          ><el-button @click="updateText">开始标注</el-button
+          ><el-button @click="cancelLabel">撤回</el-button
+          ><el-button @click="saveAndNext">下一篇</el-button></el-col
         ></el-row
       >
       <el-row :gutter="20">
@@ -28,6 +37,7 @@
     <el-card>
       <el-row :gutter="20"><i class="el-icon-s-home">原文</i> </el-row>
       <el-row
+        v-loading="loading"
         :gutter="20"
         @mouseup="handleMouseSelect"
         type="flex"
@@ -59,9 +69,11 @@
 </template>
 
 <script>
+import { ElMessage } from "element-plus";
 export default {
   data() {
     return {
+      loading: true,
       show: false,
       end: 0,
       bagin: 0,
@@ -107,8 +119,17 @@ export default {
         .get(`/api/get_text`)
         .then(res => {
           this.abstract = this.text = res.data.abstract;
+          this.loading = false;
         })
         .catch(error => console.log(error));
+    },
+    cancelLabel() {
+      let textLabel_dict = this.abstract_label.pop();
+      this.text = textLabel_dict.text + this.text;
+      ElMessage.success({
+        message: "取消" + textLabel_dict.text + "的标记",
+        type: "success"
+      });
     },
     handleMouseSelect() {
       let loc = window
@@ -137,7 +158,7 @@ export default {
         this.abstract_label.push({ text: this.flag, label: value });
         this.flag = "";
       } else {
-        alert("请按照顺序进行标注");
+        ElMessage.warning({ message: "请按照顺序进行标注", type: "warning" });
       }
     },
     saveAndNext() {
@@ -157,10 +178,14 @@ export default {
             this.text_label = "";
             this.abstract_label = [];
             this.abstract = this.text = res.data.abstract;
+            this.loading = false;
           })
           .catch(error => console.log(error));
       } else {
-        alert("标注未完成，请完成标注后进行保存！！！");
+        ElMessage.warning({
+          message: "标注未完成，请完成标注后进行保存！！！",
+          type: "warning"
+        });
       }
     }
   }
