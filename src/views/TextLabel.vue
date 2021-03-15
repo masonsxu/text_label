@@ -187,7 +187,36 @@ export default {
           type: "warning"
         });
       }
+    },
+    resetLabelFlag() {
+      this.$axios
+        .post(`/api/reset_label_flag`, {
+          abstract: this.abstract
+        })
+        .then(res => {
+          this.end = 0;
+          this.bagin = 0;
+          this.text = "";
+          this.flag = "";
+          this.text_pre = "";
+          this.abstract = "";
+          this.text_label = "";
+          this.abstract_label = [];
+          this.abstract = this.text = res.data.abstract;
+          this.loading = false;
+          ElMessage.warning({
+            message: "因为长时间不操作当前待标注文本已重置！！！",
+            type: "warning"
+          });
+        })
+        .catch(error => console.log(error));
     }
+  },
+  mounted() {
+    this.timer = setInterval(this.resetLabelFlag, 600000);
+  },
+  beforeUnmount() {
+    clearInterval(this.timer);
   }
 };
 </script>
