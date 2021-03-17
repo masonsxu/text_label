@@ -4,9 +4,16 @@
       <el-row><i class="el-icon-s-opportunity">标注规则</i></el-row>
       <el-row>
         标注方式：BIO标注（其中B代表Begin，指代实体的开始，I代表Inner，指代实体内部，O代表Other，指代不属于实体的字）
-        <br />标点符号一律标注为O <br />实体种类：<br />时间—TIME <br />地点—LOC
-        <br />人物—PER<br />
-        机构/组织—ORG <br />结果—RES
+        <br />标点符号一律标注为O <br />实体种类：<br />
+        <p>时间—TIME</p>
+        <br />
+        <p>地点—LOC</p>
+        <br />
+        <p>人物—PER</p>
+        <br />
+        <p>机构/组织—ORG</p>
+        <br />
+        <p>结果—RES</p>
       </el-row>
     </el-card>
     <el-card>
@@ -14,7 +21,10 @@
         ><el-col :span="8"
           ><el-button @click="updateText">开始标注</el-button
           ><el-button @click="cancelLabel">撤回</el-button
-          ><el-button @click="saveAndNext">下一篇</el-button></el-col
+          ><el-button @click="saveAndNext">下一篇</el-button>
+          <el-button @click="resetLabelFlag"
+            >退出当前文本标注</el-button
+          ></el-col
         ></el-row
       >
       <el-row :gutter="20">
@@ -115,13 +125,26 @@ export default {
   },
   methods: {
     updateText() {
-      this.$axios
-        .get(`/api/get_text`)
-        .then(res => {
-          this.abstract = this.text = res.data.abstract;
-          this.loading = false;
-        })
-        .catch(error => console.log(error));
+      if (this.text == "") {
+        this.$axios
+          .get(`/api/get_text`)
+          .then(res => {
+            this.abstract = this.text = res.data.abstract;
+            this.loading = false;
+          })
+          .catch(error => {
+            ElMessage.warning({
+              message: error,
+              type: "warning"
+            });
+          });
+      } else {
+        ElMessage.warning({
+          message:
+            "标注未完成，请完成标注后点击继续下一条标注或退出此次标注！！！",
+          type: "warning"
+        });
+      }
     },
     cancelLabel() {
       let textLabel_dict = this.abstract_label.pop();
@@ -180,7 +203,12 @@ export default {
             this.abstract = this.text = res.data.abstract;
             this.loading = false;
           })
-          .catch(error => console.log(error));
+          .catch(error => {
+            ElMessage.warning({
+              message: error,
+              type: "warning"
+            });
+          });
       } else {
         ElMessage.warning({
           message: "标注未完成，请完成标注后进行保存！！！",
@@ -203,13 +231,18 @@ export default {
           this.text_label = "";
           this.abstract_label = [];
           this.abstract = this.text = res.data.abstract;
-          this.loading = false;
+          this.loading = true;
           ElMessage.warning({
-            message: "因为长时间不操作当前待标注文本已重置！！！",
+            message: "当前待标注文本已被重置！！！",
             type: "warning"
           });
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          ElMessage.warning({
+            message: error,
+            type: "warning"
+          });
+        });
     }
   },
   mounted() {
@@ -244,5 +277,8 @@ export default {
 .row-bg {
   padding: 10px 0;
   background-color: #f9fafc;
+}
+p {
+  text-indent: 4em;
 }
 </style>
