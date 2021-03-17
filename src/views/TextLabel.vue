@@ -4,21 +4,13 @@
       <el-row><i class="el-icon-s-opportunity">标注规则</i></el-row>
       <el-row>
         标注方式：BIO标注（其中B代表Begin，指代实体的开始，I代表Inner，指代实体内部，O代表Other，指代不属于实体的字）
-        <br />标点符号一律标注为O <br />实体种类：<br />
-        <p>时间—TIME</p>
-        <br />
-        <p>地点—LOC</p>
-        <br />
-        <p>人物—PER</p>
-        <br />
-        <p>机构/组织—ORG</p>
-        <br />
-        <p>结果—RES</p>
+        <br />标点符号一律标注为O <br />实体种类：<br />时间—TIME <br />地点—LOC
+        <br />人物—PER <br />机构/组织—ORG <br />结果—RES
       </el-row>
     </el-card>
     <el-card>
-      <el-row :gutter="20"
-        ><el-col :span="8"
+      <el-row :gutter="90"
+        ><el-col :span="10"
           ><el-button @click="updateText">开始标注</el-button
           ><el-button @click="cancelLabel">撤回</el-button
           ><el-button @click="saveAndNext">下一篇</el-button>
@@ -65,7 +57,7 @@
     <el-radio-group
       v-model="value"
       placeholder="请选择"
-      v-show="flag == '' ? show : !show"
+      v-show="flag == null ? show : !show"
     >
       <el-radio-button
         v-for="item in options"
@@ -88,11 +80,12 @@ export default {
       end: 0,
       bagin: 0,
       text_height: 0,
-      flag: "",
-      text: "",
-      abstract: "",
-      text_pre: "",
-      text_label: "",
+      flag: null,
+      text: null,
+      value: null,
+      abstract: null,
+      text_pre: null,
+      text_label: null,
       abstract_label: [],
       options: [
         {
@@ -119,13 +112,12 @@ export default {
           value: "O",
           label: "O"
         }
-      ],
-      value: ""
+      ]
     };
   },
   methods: {
     updateText() {
-      if (this.text == "") {
+      if (this.text == null) {
         this.$axios
           .get(`/api/get_text`)
           .then(res => {
@@ -147,12 +139,19 @@ export default {
       }
     },
     cancelLabel() {
-      let textLabel_dict = this.abstract_label.pop();
-      this.text = textLabel_dict.text + this.text;
-      ElMessage.success({
-        message: "取消" + textLabel_dict.text + "的标记",
-        type: "success"
-      });
+      if (this.abstract_label.length != 0) {
+        let textLabel_dict = this.abstract_label.pop();
+        this.text = textLabel_dict.text + this.text;
+        ElMessage.success({
+          message: "取消" + textLabel_dict.text + "的标记",
+          type: "success"
+        });
+      } else {
+        ElMessage.warning({
+          message: "没有被标注文本！！！",
+          type: "warning"
+        });
+      }
     },
     handleMouseSelect() {
       let loc = window
@@ -179,13 +178,18 @@ export default {
         this.text_label = value;
         this.text = this.text.substring((this.end -= 1));
         this.abstract_label.push({ text: this.flag, label: value });
-        this.flag = "";
+        this.flag = null;
       } else {
         ElMessage.warning({ message: "请按照顺序进行标注", type: "warning" });
       }
     },
     saveAndNext() {
-      if (this.text.length == 0) {
+      if (this.text == null) {
+        ElMessage.warning({
+          message: "未开始文本标注，不需要保存！！！",
+          type: "warning"
+        });
+      } else if (this.text.length == 0 && this.text != null) {
         this.$axios
           .post(`/api/saveAndNext`, {
             abstract: this.abstract,
@@ -194,11 +198,11 @@ export default {
           .then(res => {
             this.end = 0;
             this.bagin = 0;
-            this.text = "";
-            this.flag = "";
-            this.text_pre = "";
-            this.abstract = "";
-            this.text_label = "";
+            this.text = null;
+            this.flag = null;
+            this.text_pre = null;
+            this.abstract = null;
+            this.text_label = null;
             this.abstract_label = [];
             this.abstract = this.text = res.data.abstract;
             this.loading = false;
@@ -217,32 +221,39 @@ export default {
       }
     },
     resetLabelFlag() {
-      this.$axios
-        .post(`/api/reset_label_flag`, {
-          abstract: this.abstract
-        })
-        .then(res => {
-          this.end = 0;
-          this.bagin = 0;
-          this.text = "";
-          this.flag = "";
-          this.text_pre = "";
-          this.abstract = "";
-          this.text_label = "";
-          this.abstract_label = [];
-          this.abstract = this.text = res.data.abstract;
-          this.loading = true;
-          ElMessage.warning({
-            message: "当前待标注文本已被重置！！！",
-            type: "warning"
+      if (this.abstract != null) {
+        this.$axios
+          .post(`/api/reset_label_flag`, {
+            abstract: this.abstract
+          })
+          .then(res => {
+            this.end = 0;
+            this.bagin = 0;
+            this.text = null;
+            this.flag = null;
+            this.text_pre = null;
+            this.abstract = null;
+            this.text_label = null;
+            this.abstract_label = [];
+            this.abstract = this.text = res.data.abstract;
+            this.loading = true;
+            ElMessage.success({
+              message: "当前待标注文本已被重置！！！",
+              type: "success"
+            });
+          })
+          .catch(error => {
+            ElMessage.error({
+              message: error,
+              type: "error"
+            });
           });
-        })
-        .catch(error => {
-          ElMessage.warning({
-            message: error,
-            type: "warning"
-          });
+      } else {
+        ElMessage.warning({
+          message: "没有读取任何文本，没有文本被重置！！！",
+          type: "warning"
         });
+      }
     }
   },
   mounted() {
