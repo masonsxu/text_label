@@ -24,35 +24,41 @@
           <div style="margin-top:20px">
             <span style="font-weight:600;">标注字段:</span>
             <el-input
-              style="width:65%;margin-left:22px;"
+              style="width:65%;margin-left:22px;text-align:center;"
               v-model="text_pre"
+              :disabled="true"
             ></el-input></div
         ></el-col>
         <el-col :span="8">
           <div style="margin-top:20px">
             <span style="font-weight:600;">标注为:</span>
-            <el-input style="width:65%;margin-left:22px;" v-model="text_label">
+            <el-input
+              style="width:65%;margin-left:22px;text-align:center;"
+              v-model="text_label"
+              :disabled="true"
+            >
             </el-input></div
         ></el-col>
       </el-row>
     </el-card>
     <el-card>
       <el-row :gutter="20"><i class="el-icon-s-home">原文</i> </el-row>
-      <el-row
-        v-loading="loading"
-        :gutter="20"
-        @mouseup="handleMouseSelect"
-        type="flex"
-        justify="center"
+      <el-skeleton :rows="1" :loading="loading" animated>
+        <el-row
+          :gutter="20"
+          @mouseup="handleMouseSelect"
+          type="flex"
+          justify="center"
+        >
+          <span style="width:95%">
+            <span v-for="item in abstract_label" :key="item.text"
+              ><el-tag>{{ item.text }}</el-tag>
+              <el-tag type="success">{{ item.label }}</el-tag></span
+            >
+            {{ text }}
+          </span>
+        </el-row></el-skeleton
       >
-        <span style="width:95%">
-          <span v-for="item in abstract_label" :key="item.text"
-            ><el-tag>{{ item.text }}</el-tag>
-            <el-tag type="success">{{ item.label }}</el-tag></span
-          >
-          {{ text }}
-        </span>
-      </el-row>
     </el-card>
     <el-radio-group
       v-model="value"
@@ -154,23 +160,31 @@ export default {
       }
     },
     handleMouseSelect() {
-      let loc = window
-        .getSelection()
-        .getRangeAt(0)
-        .getBoundingClientRect();
-      this.bagin = window.getSelection().anchorOffset;
-      this.end = window.getSelection().focusOffset;
-      this.text_pre = this.flag = window.getSelection().toString();
-      let el_radio_group = document.getElementsByClassName("el-radio-group")[0];
-      el_radio_group.style.position = "absolute";
-      el_radio_group.style.top = String(loc.bottom) + "px";
-      if (this.text_height == 0) {
-        el_radio_group.style.left = String(loc.left + loc.width) + "px";
-        this.text_height = loc.height;
-      } else if (this.text_height != 0 && loc.height == this.text_height) {
-        el_radio_group.style.left = String(loc.left + loc.width) + "px";
+      if (window.getSelection().toString().length > 0) {
+        let loc = window
+          .getSelection()
+          .getRangeAt(0)
+          .getBoundingClientRect();
+        this.bagin = window.getSelection().anchorOffset;
+        this.end = window.getSelection().focusOffset;
+        this.text_pre = this.flag = window.getSelection().toString();
+        let el_radio_group = document.getElementsByClassName(
+          "el-radio-group"
+        )[0];
+        el_radio_group.style.position = "absolute";
+        el_radio_group.style.top = String(loc.bottom) + "px";
+        if (this.text_height == 0) {
+          el_radio_group.style.left = String(loc.left + loc.width) + "px";
+          this.text_height = loc.height;
+        } else if (this.text_height != 0 && loc.height == this.text_height) {
+          el_radio_group.style.left = String(loc.left + loc.width) + "px";
+        } else {
+          el_radio_group.style.left = String(loc.left + loc.left) + "px";
+        }
       } else {
-        el_radio_group.style.left = String(loc.left + loc.left) + "px";
+        this.flag = null;
+        this.text_pre = null;
+        this.text_label = null;
       }
     },
     textLabel(value) {
