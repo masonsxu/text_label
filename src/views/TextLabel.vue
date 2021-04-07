@@ -24,7 +24,7 @@
           <div style="margin-top:20px">
             <span style="font-weight:600;">标注字段:</span>
             <el-input
-              style="width:65%;margin-left:22px;text-align:center;"
+              style="width:65%;margin-left:22px;"
               v-model="text_pre"
               :disabled="true"
             ></el-input></div
@@ -33,7 +33,7 @@
           <div style="margin-top:20px">
             <span style="font-weight:600;">标注为:</span>
             <el-input
-              style="width:65%;margin-left:22px;text-align:center;"
+              style="width:65%;margin-left:22px;"
               v-model="text_label"
               :disabled="true"
             >
@@ -159,44 +159,6 @@ export default {
         });
       }
     },
-    handleMouseSelect() {
-      if (window.getSelection().toString().length > 0) {
-        let loc = window
-          .getSelection()
-          .getRangeAt(0)
-          .getBoundingClientRect();
-        this.bagin = window.getSelection().anchorOffset;
-        this.end = window.getSelection().focusOffset;
-        this.text_pre = this.flag = window.getSelection().toString();
-        let el_radio_group = document.getElementsByClassName(
-          "el-radio-group"
-        )[0];
-        el_radio_group.style.position = "absolute";
-        el_radio_group.style.top = String(loc.bottom) + "px";
-        if (this.text_height == 0) {
-          el_radio_group.style.left = String(loc.left + loc.width) + "px";
-          this.text_height = loc.height;
-        } else if (this.text_height != 0 && loc.height == this.text_height) {
-          el_radio_group.style.left = String(loc.left + loc.width) + "px";
-        } else {
-          el_radio_group.style.left = String(loc.left + loc.left) + "px";
-        }
-      } else {
-        this.flag = null;
-        this.text_pre = null;
-        this.text_label = null;
-      }
-    },
-    textLabel(value) {
-      if (this.bagin == 1) {
-        this.text_label = value;
-        this.text = this.text.substring((this.end -= 1));
-        this.abstract_label.push({ text: this.flag, label: value });
-        this.flag = null;
-      } else {
-        ElMessage.warning({ message: "请按照顺序进行标注", type: "warning" });
-      }
-    },
     saveAndNext() {
       if (this.text == null) {
         ElMessage.warning({
@@ -267,6 +229,44 @@ export default {
           message: "没有读取任何文本，没有文本被重置！！！",
           type: "warning"
         });
+      }
+    },
+    handleMouseSelect() {
+      if (window.getSelection().toString().length > 0) {
+        let loc = window
+          .getSelection()
+          .getRangeAt(0)
+          .getBoundingClientRect();
+        this.bagin = window.getSelection().anchorOffset;
+        this.end = window.getSelection().focusOffset;
+        this.text_pre = this.flag = window.getSelection().toString();
+        let el_radio_group = document.getElementsByClassName(
+          "el-radio-group"
+        )[0];
+        el_radio_group.style.position = "absolute";
+        el_radio_group.style.top = String(loc.bottom) + "px";
+        if (this.text_height == 0) {
+          el_radio_group.style.left = String(loc.left + loc.width) + "px";
+          this.text_height = loc.height;
+        } else if (this.text_height != 0 && loc.height == this.text_height) {
+          el_radio_group.style.left = String(loc.left + loc.width) + "px";
+        } else {
+          el_radio_group.style.left = String(loc.left + loc.left) + "px";
+        }
+      } else {
+        this.flag = null;
+        this.text_pre = null;
+        this.text_label = null;
+      }
+    },
+    textLabel(value) {
+      if (this.bagin == 1) {
+        this.text_label = value;
+        this.text = this.text.substring((this.end -= 1));
+        this.abstract_label.push({ text: this.flag, label: value });
+        this.flag = null;
+      } else {
+        ElMessage.warning({ message: "请按照顺序进行标注", type: "warning" });
       }
     }
   },
