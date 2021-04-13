@@ -1,10 +1,10 @@
 <template>
-  <div id="app">
+  <div id="app" class="common-layout">
     <el-container>
       <el-header style="font-weight:700;font-size:18px;">
         {{ mseeage.title }}
       </el-header>
-      <router-view></router-view>
+      <el-main><router-view></router-view></el-main>
       <el-footer>{{ mseeage.footer }}</el-footer>
     </el-container>
   </div>
