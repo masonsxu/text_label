@@ -9,7 +9,7 @@
       </el-row>
     </el-card>
     <el-card>
-      <el-row :gutter="90"
+      <el-row
         ><el-col :span="10"
           ><el-button @click="updateText">开始标注</el-button
           ><el-button @click="cancelLabel">撤回</el-button
@@ -19,29 +19,6 @@
           ></el-col
         ></el-row
       >
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <div style="margin-top:20px">
-            <span style="font-weight:600;">标注字段:</span>
-            <el-input
-              style="width:65%;margin-left:22px;"
-              v-model="text_pre"
-              :disabled="true"
-            ></el-input></div
-        ></el-col>
-        <el-col :span="8">
-          <div style="margin-top:20px">
-            <span style="font-weight:600;">标注为:</span>
-            <el-input
-              style="width:65%;margin-left:22px;"
-              v-model="text_label"
-              :disabled="true"
-            >
-            </el-input></div
-        ></el-col>
-      </el-row>
-    </el-card>
-    <el-card>
       <el-row :gutter="20"><i class="el-icon-s-home">原文</i> </el-row>
       <el-skeleton :rows="1" :loading="loading" animated>
         <el-row
@@ -53,12 +30,34 @@
           <span style="width:95%">
             <span v-for="item in abstract_label" :key="item.text"
               ><el-tag>{{ item.text }}</el-tag>
-              <el-tag type="success">{{ item.label }}</el-tag></span
+              <el-tag type="success" effect="dark" @click="tagClick">{{
+                item.label
+              }}</el-tag></span
             >
             {{ text }}
           </span>
         </el-row></el-skeleton
       >
+    </el-card>
+    <el-card>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-table :data="table_data" height="160" border style="width: 100%">
+            <el-table-column prop="text_pre" label="标注字段">
+            </el-table-column>
+            <el-table-column prop="text_label" label="标注结果">
+            </el-table-column>
+          </el-table>
+        </el-col>
+        <el-col :span="12">
+          <el-table :data="spo_list" height="160" border style="width: 100%">
+            <el-table-column prop="subject_type" label="主语">
+            </el-table-column>
+            <el-table-column prop="predicate" label="谓语"> </el-table-column
+            ><el-table-column prop="object_type" label="宾语">
+            </el-table-column> </el-table
+        ></el-col>
+      </el-row>
     </el-card>
     <el-radio-group
       v-model="value"
@@ -92,6 +91,8 @@ export default {
       abstract: null,
       text_pre: null,
       text_label: null,
+      spo_list: [],
+      table_data: [],
       abstract_label: [],
       options: [
         {
@@ -146,6 +147,7 @@ export default {
     },
     cancelLabel() {
       if (this.abstract_label.length != 0) {
+        this.table_data.pop();
         let textLabel_dict = this.abstract_label.pop();
         this.text = textLabel_dict.text + this.text;
         ElMessage.success({
@@ -210,6 +212,7 @@ export default {
             this.text_pre = null;
             this.abstract = null;
             this.text_label = null;
+            this.table_data = [];
             this.abstract_label = [];
             this.abstract = this.text = res.data.abstract;
             this.loading = true;
@@ -265,9 +268,16 @@ export default {
         this.text = this.text.substring((this.end -= 1));
         this.abstract_label.push({ text: this.flag, label: value });
         this.flag = null;
+        this.table_data.push({
+          text_pre: this.text_pre,
+          text_label: this.text_label
+        });
       } else {
         ElMessage.warning({ message: "请按照顺序进行标注", type: "warning" });
       }
+    },
+    tagClick() {
+      ElMessage.warning({ message: "tag点击事件", type: "warning" });
     }
   },
   mounted() {
