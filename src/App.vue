@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="common-layout">
+  <div id="app" class="common-layout" @contextmenu.prevent>
     <el-container>
       <el-header style="font-weight:700;font-size:18px;">
         {{ mseeage.title }}
