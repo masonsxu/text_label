@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="common-layout" @contextmenu.prevent>
     <el-container>
-      <el-header style="font-weight:700;font-size:18px;">
+      <el-header style="font-weight: 700;font-size: 18px;">
         {{ mseeage.title }}
       </el-header>
       <el-main><router-view></router-view></el-main>
