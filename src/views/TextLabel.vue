@@ -26,29 +26,29 @@
           justify="center"
         >
           <span style="width:95%">
-            <span v-for="item in abstract_label" :key="item.text"
-              ><el-tag>{{ item.text }}</el-tag>
+            <span v-for="item in abstract_label" :key="item.word"
+              ><el-tag>{{ item.word }}</el-tag>
               <el-tooltip
                 :disabled="tooltip_disabled"
                 placement="bottom"
                 effect="light"
               >
                 <template #content>
-                  鼠标左击可建立关系<br />鼠标右击，可"取消/修改"实体标签
+                  鼠标左击可建立关系
                   <br /><el-button
                     type="text"
                     size="mini"
                     @click="tooltip_disabled = !tooltip_disabled"
                     >不再提示</el-button
                   ></template
-                >
-                <el-button
+                ><el-button
                   id="verb_list"
                   size="small"
-                  @mousedown="verb_choose(item.text, $event)"
-                  >{{ item.label }}</el-button
-                ></el-tooltip
-              >
+                  :type="button_type == null ? '' : 'success'"
+                  @mousedown="verb_choose(item.word, $event)"
+                  >{{ item.pos }}</el-button
+                >
+              </el-tooltip>
             </span>
             {{ text }}
           </span>
@@ -66,13 +66,24 @@
           </el-table>
         </el-col>
         <el-col :span="12">
-          <el-table :data="spo_list" height="160" border style="width: 100%">
-            <el-table-column prop="subject_type" label="主语(S)">
+          <el-table :data="spo_list" height="160" border style="width: 100%"
+            ><el-table-column prop="predicate" label="谓语(P)">
+            </el-table-column
+            ><el-table-column prop="object" label="宾语(O)"> </el-table-column>
+            <el-table-column prop="subject" label="主语(S)"> </el-table-column>
+            <el-table-column fixed="right" label="操作" width="120">
+              <template #default="scope">
+                <el-button
+                  @click.prevent="deleteRow(scope.$index, spo_list)"
+                  type="text"
+                  size="small"
+                >
+                  移除
+                </el-button>
+              </template>
             </el-table-column>
-            <el-table-column prop="predicate" label="谓语(P)"> </el-table-column
-            ><el-table-column prop="object_type" label="宾语(O)">
-            </el-table-column> </el-table
-        ></el-col>
+          </el-table></el-col
+        >
       </el-row>
     </el-card>
     <el-radio-group
@@ -112,6 +123,7 @@ export default {
     return {
       show: false,
       loading: true,
+
       tooltip_disabled: false,
       end: 0,
       bagin: 0,
@@ -119,10 +131,12 @@ export default {
       flag: null,
       text: null,
       value: null,
-      predicate: null,
       abstract: null,
       text_pre: null,
+      predicate: null,
       text_label: null,
+      button_type: null,
+
       spo_dict: {},
       spo_list: [],
       table_data: [],
@@ -155,51 +169,91 @@ export default {
       ],
       predicate_options: [
         {
-          value: "祖籍",
+          value: {
+            object_type: "地点",
+            predicate: "祖籍",
+            subject_type: "人物"
+          },
           label: "祖籍"
         },
         {
-          value: "父亲",
+          value: {
+            object_type: "人物",
+            predicate: "父亲",
+            subject_type: "人物"
+          },
           label: "父亲"
         },
         {
-          value: "总部地点",
+          value: {
+            object_type: "地点",
+            predicate: "总部地点",
+            subject_type: "企业"
+          },
           label: "总部地点"
         },
         {
-          value: "出生地",
+          value: {
+            object_type: "地点",
+            predicate: "出生地",
+            subject_type: "人物"
+          },
           label: "出生地"
         },
         {
-          value: "面积",
+          value: {
+            object_type: "Number",
+            predicate: "面积",
+            subject_type: "行政区"
+          },
           label: "面积"
         },
         {
-          value: "简称",
+          value: {
+            object_type: "Text",
+            predicate: "简称",
+            subject_type: "机构"
+          },
           label: "简称"
         },
         {
-          value: "作者",
+          value: {
+            object_type: "人物",
+            predicate: "作者",
+            subject_type: "图书作品"
+          },
           label: "作者"
         },
         {
-          value: "成立日期",
+          value: {
+            object_type: "Date",
+            predicate: "成立日期",
+            subject_type: "企业"
+          },
           label: "成立日期"
         },
         {
-          value: "总部地点",
-          label: "总部地点"
-        },
-        {
-          value: "出生日期",
+          value: {
+            object_type: "Date",
+            predicate: "出生日期",
+            subject_type: "人物"
+          },
           label: "出生日期"
         },
         {
-          value: "首都",
+          value: {
+            object_type: "城市",
+            predicate: "首都",
+            subject_type: "国家"
+          },
           label: "首都"
         },
         {
-          value: "身高",
+          value: {
+            object_type: "Number",
+            predicate: "身高",
+            subject_type: "人物"
+          },
           label: "身高"
         }
       ]
@@ -234,9 +288,9 @@ export default {
       if (this.abstract_label.length != 0) {
         this.table_data.pop();
         let textLabel_dict = this.abstract_label.pop();
-        this.text = textLabel_dict.text + this.text;
+        this.text = textLabel_dict.word + this.text;
         ElMessage.success({
-          message: '取消"' + textLabel_dict.text + '"的标记',
+          message: '取消"' + textLabel_dict.word + '"的标记',
           type: "success",
           center: true
         });
@@ -259,16 +313,22 @@ export default {
         this.$axios
           .post(`/api/saveAndNext`, {
             abstract: this.abstract,
-            abstract_label: this.abstract_label
+            abstract_label: {
+              postag: this.abstract_label,
+              spo_list: this.spo_list
+            }
           })
           .then(res => {
             this.end = 0;
             this.bagin = 0;
             this.text = null;
             this.flag = null;
+            this.spo_dict = null;
             this.text_pre = null;
             this.abstract = null;
             this.text_label = null;
+            this.spo_list = [];
+            this.table_data = [];
             this.abstract_label = [];
             this.abstract = this.text = res.data.abstract;
             this.loading = false;
@@ -349,7 +409,7 @@ export default {
       if (this.bagin == 1) {
         this.text_label = value;
         this.text = this.text.substring((this.end -= 1));
-        this.abstract_label.push({ text: this.flag, label: value });
+        this.abstract_label.push({ word: this.flag, pos: value });
         this.flag = null;
         this.table_data.push({
           text_pre: this.text_pre,
@@ -363,17 +423,20 @@ export default {
         });
       }
     },
-    preLabel(label) {
-      this.spo_dict["predicate"] = label;
-      this.spo_list.push(this.spo_dict);
-      this.spo_dict = {};
+    preLabel(value) {
+      value["object"] = this.spo_dict["object_type"];
+      value["subject"] = this.spo_dict["subject_type"];
+
+      this.spo_list.push(value);
+      this.button_type = null;
       this.predicate = null;
+      this.spo_dict = {};
     },
     verb_choose(text, event) {
       if (event.button == 0) {
-        ElMessage.info("你点了左键" + event.clientX + " " + event.clientY);
         if (Object.keys(this.spo_dict) == 0) {
           this.spo_dict["subject_type"] = text;
+          this.button_type = "success";
         } else {
           this.predicate = this.spo_dict["object_type"] = text;
           let select_trigger = document.getElementsByClassName(
@@ -383,9 +446,26 @@ export default {
           select_trigger.style.left = String(event.clientX) + "px";
           select_trigger.style.top = String(event.clientY) + "px";
         }
-      } else if (event.button == 2) {
-        ElMessage.info("你点了右键" + text);
       }
+      //   else if (event.button == 2) {
+      //     if (Object.keys(this.spo_dict) != 0) {
+      //       let spo_list_dict = this.spo_list.pop();
+      //       ElMessage.success({
+      //         message: '取消"' + spo_list_dict + '"的标记',
+      //         type: "success",
+      //         center: true
+      //       });
+      //     } else {
+      //       ElMessage.warning({
+      //         message: "没有被标注文本！！！",
+      //         type: "warning",
+      //         center: true
+      //       });
+      //     }
+      // }
+    },
+    deleteRow(index, rows) {
+      rows.splice(index, 1);
     }
   },
   mounted() {
