@@ -34,7 +34,7 @@
                 effect="light"
               >
                 <template #content>
-                  鼠标左击可建立关系
+                  鼠标左击可建立关系<br />鼠标右键可以取消当前“SPO”标注
                   <br /><el-button
                     type="text"
                     size="mini"
@@ -136,7 +136,6 @@ export default {
       predicate: null,
       text_label: null,
       button_type: null,
-
       spo_dict: {},
       spo_list: [],
       table_data: [],
@@ -446,23 +445,24 @@ export default {
           select_trigger.style.left = String(event.clientX) + "px";
           select_trigger.style.top = String(event.clientY) + "px";
         }
+      } else if (event.button == 2) {
+        if (Object.keys(this.spo_dict) != 0) {
+          this.button_type = null;
+          this.predicate = null;
+          this.spo_dict = {};
+          ElMessage.success({
+            message: "取消当前“SPO”的标记",
+            type: "success",
+            center: true
+          });
+        } else {
+          ElMessage.warning({
+            message: "没有被标注文本！！！",
+            type: "warning",
+            center: true
+          });
+        }
       }
-      //   else if (event.button == 2) {
-      //     if (Object.keys(this.spo_dict) != 0) {
-      //       let spo_list_dict = this.spo_list.pop();
-      //       ElMessage.success({
-      //         message: '取消"' + spo_list_dict + '"的标记',
-      //         type: "success",
-      //         center: true
-      //       });
-      //     } else {
-      //       ElMessage.warning({
-      //         message: "没有被标注文本！！！",
-      //         type: "warning",
-      //         center: true
-      //       });
-      //     }
-      // }
     },
     deleteRow(index, rows) {
       rows.splice(index, 1);
