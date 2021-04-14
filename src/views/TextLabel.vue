@@ -14,10 +14,8 @@
           ><el-button @click="updateText">开始标注</el-button
           ><el-button @click="cancelLabel">撤回</el-button
           ><el-button @click="saveAndNext">下一篇</el-button>
-          <el-button @click="resetLabelFlag"
-            >退出当前文本标注</el-button
-          ></el-col
-        ></el-row
+          <el-button @click="resetLabelFlag">退出当前文本标注</el-button>
+        </el-col></el-row
       >
       <el-row :gutter="20"><i class="el-icon-s-home">原文</i> </el-row>
       <el-skeleton :rows="1" :loading="loading" animated>
@@ -30,10 +28,28 @@
           <span style="width:95%">
             <span v-for="item in abstract_label" :key="item.text"
               ><el-tag>{{ item.text }}</el-tag>
-              <el-tag type="success" effect="dark" @click="tagClick">{{
-                item.label
-              }}</el-tag></span
-            >
+              <el-tooltip
+                :disabled="tooltip_disabled"
+                placement="bottom"
+                effect="light"
+              >
+                <template #content>
+                  鼠标左击可建立关系<br />鼠标右击，可"取消/修改"实体标签
+                  <br /><el-button
+                    type="text"
+                    size="mini"
+                    @click="tooltip_disabled = !tooltip_disabled"
+                    >不再提示</el-button
+                  ></template
+                >
+                <el-button
+                  id="verb_list"
+                  size="small"
+                  @mousedown="verb_choose"
+                  >{{ item.label }}</el-button
+                ></el-tooltip
+              >
+            </span>
             {{ text }}
           </span>
         </el-row></el-skeleton
@@ -80,8 +96,9 @@ import { ElMessage } from "element-plus";
 export default {
   data() {
     return {
-      loading: true,
       show: false,
+      loading: true,
+      tooltip_disabled: false,
       end: 0,
       bagin: 0,
       text_height: 0,
@@ -278,6 +295,13 @@ export default {
     },
     tagClick() {
       ElMessage.warning({ message: "tag点击事件", type: "warning" });
+    },
+    verb_choose(event) {
+      if (event.button == 0) {
+        ElMessage.info("你点了左键");
+      } else if (event.button == 2) {
+        ElMessage.info("你点了右键");
+      }
     }
   },
   mounted() {
