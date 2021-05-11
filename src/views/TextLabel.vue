@@ -14,7 +14,25 @@
           ><el-button @click="updateText">开始标注</el-button
           ><el-button @click="cancelLabel">撤回</el-button
           ><el-button @click="saveAndNext">下一篇</el-button>
-          <el-button @click="resetLabelFlag">退出当前文本标注</el-button>
+          <el-button @click="resetLabelFlag">退出当前文本标注</el-button
+          ><el-select
+            v-model="value"
+            placeholder="突发事件所属类型"
+            v-show="text == null ? show : !show"
+          >
+            <el-option
+              v-for="item in emergency_type_options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+              @click.prevent="emergencyLabel(item.label, item.value)"
+            >
+              <span style="float: left">{{ item.label }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{
+                item.value
+              }}</span>
+            </el-option>
+          </el-select>
         </el-col></el-row
       >
       <el-row :gutter="20"><i class="el-icon-s-home">原文</i> </el-row>
@@ -123,7 +141,6 @@ export default {
     return {
       show: false,
       loading: true,
-
       tooltip_disabled: false,
       end: 0,
       bagin: 0,
@@ -140,6 +157,7 @@ export default {
       spo_list: [],
       table_data: [],
       abstract_label: [],
+      emergency_type: [],
       lable_options: [
         {
           value: "LOC",
@@ -255,6 +273,28 @@ export default {
           },
           label: "身高"
         }
+      ],
+      emergency_type_options: [
+        {
+          value: "Natural disaster",
+          label: "自然灾害"
+        },
+        {
+          value: "Accident disaster",
+          label: "事故灾害"
+        },
+        {
+          value: "Public health event",
+          label: "公共卫生事件"
+        },
+        {
+          value: "Social security incident",
+          label: "社会安全事件"
+        },
+        {
+          value: "Other emergencies",
+          label: "其他突发事件"
+        }
       ]
     };
   },
@@ -313,6 +353,7 @@ export default {
           .post(`/api/saveAndNext`, {
             abstract: this.abstract,
             abstract_label: {
+              emergency_type: this.emergency_type,
               postag: this.abstract_label,
               spo_list: this.spo_list
             }
@@ -329,6 +370,7 @@ export default {
             this.spo_list = [];
             this.table_data = [];
             this.abstract_label = [];
+            this.emergency_type = [];
             this.abstract = this.text = res.data.abstract;
             this.loading = false;
           })
@@ -365,6 +407,7 @@ export default {
             this.spo_list = [];
             this.table_data = [];
             this.abstract_label = [];
+            this.emergency_type = [];
             this.abstract = this.text = res.data.abstract;
             this.loading = true;
             ElMessage.success({
@@ -430,6 +473,9 @@ export default {
       this.button_type = null;
       this.predicate = null;
       this.spo_dict = {};
+    },
+    emergencyLabel(label, value) {
+      this.emergency_type.push({ Chinese: label, English: value });
     },
     verb_choose(text, event) {
       if (event.button == 0) {
