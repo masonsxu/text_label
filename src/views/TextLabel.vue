@@ -348,7 +348,11 @@ export default {
           type: "warning",
           center: true
         });
-      } else if (this.text.length == 0 && this.text != null) {
+      } else if (
+        this.text.length == 0 &&
+        this.text != null &&
+        this.emergency_type.length != 0
+      ) {
         this.$axios
           .post(`/api/saveAndNext`, {
             abstract: this.abstract,
@@ -383,7 +387,8 @@ export default {
           });
       } else {
         ElMessage.warning({
-          message: "标注未完成，请完成标注后进行保存！！！",
+          message:
+            "标注未完成，或突发事件类型未标注，请完成标注后进行保存！！！",
           type: "warning",
           center: true
         });
