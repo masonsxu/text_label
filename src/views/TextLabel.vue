@@ -16,7 +16,7 @@
           ><el-button @click="saveAndNext">下一篇</el-button>
           <el-button @click="resetLabelFlag">退出当前文本标注</el-button
           ><el-select
-            v-model="value"
+            v-model="eme_select_value"
             placeholder="突发事件所属类型"
             v-show="text == null ? show : !show"
           >
@@ -104,11 +104,7 @@
         >
       </el-row>
     </el-card>
-    <el-radio-group
-      v-model="value"
-      placeholder="请选择"
-      v-show="flag == null ? show : !show"
-    >
+    <el-radio-group v-model="radio_value" v-show="flag == null ? show : !show">
       <el-radio-button
         v-for="item in lable_options"
         :key="item.value"
@@ -118,7 +114,7 @@
       ></el-radio-button>
     </el-radio-group>
     <el-select
-      v-model="value"
+      v-model="pre_select_value"
       placeholder="请选择"
       v-show="predicate == null ? show : !show"
     >
@@ -147,12 +143,14 @@ export default {
       text_height: 0,
       flag: null,
       text: null,
-      value: null,
       abstract: null,
       text_pre: null,
       predicate: null,
       text_label: null,
       button_type: null,
+      radio_value: null,
+      pre_select_value: null,
+      eme_select_value: null,
       spo_dict: {},
       spo_list: [],
       table_data: [],
@@ -371,6 +369,11 @@ export default {
             this.text_pre = null;
             this.abstract = null;
             this.text_label = null;
+            this.button_type = null;
+            this.radio_value = null;
+            this.pre_select_value = null;
+            this.eme_select_value = null;
+            this.spo_dict = {};
             this.spo_list = [];
             this.table_data = [];
             this.abstract_label = [];
@@ -409,6 +412,12 @@ export default {
             this.text_pre = null;
             this.abstract = null;
             this.text_label = null;
+            this.predicate = null;
+            this.button_type = null;
+            this.radio_value = null;
+            this.pre_select_value = null;
+            this.eme_select_value = null;
+            this.spo_dict = {};
             this.spo_list = [];
             this.table_data = [];
             this.abstract_label = [];
@@ -475,6 +484,7 @@ export default {
       value["subject"] = this.spo_dict["subject_type"];
 
       this.spo_list.push(value);
+      this.pre_select_value = null;
       this.button_type = null;
       this.predicate = null;
       this.spo_dict = {};
@@ -491,7 +501,7 @@ export default {
           this.predicate = this.spo_dict["object_type"] = text;
           let select_trigger = document.getElementsByClassName(
             "select-trigger"
-          )[0];
+          )[1];
           select_trigger.style.position = "fixed";
           select_trigger.style.left = String(event.clientX) + "px";
           select_trigger.style.top = String(event.clientY) + "px";
