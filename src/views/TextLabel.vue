@@ -530,7 +530,7 @@ export default {
     }
   },
   mounted() {
-    this.timer = setInterval(this.resetLabelFlag, 300000);
+    this.timer = setInterval(this.resetLabelFlag, 600000);
     window.onbeforeunload = this.resetLabelFlag;
   },
   beforeUnmount() {
